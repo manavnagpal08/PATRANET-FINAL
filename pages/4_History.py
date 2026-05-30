@@ -6,11 +6,11 @@ from firebase.firestore_service import get_documents, get_result
 from app import CUSTOM_CSS
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
-st.title("📂 Document History")
+st.title("Document History")
 st.write("Browse, search, and manage previously analyzed documents.")
 
 # Search query
-search_query = st.text_input("🔍 Search documents by name", "")
+search_query = st.text_input("Search Stored Documents", "")
 
 # Load all documents from DB
 docs = get_documents()
@@ -32,12 +32,12 @@ else:
         with st.container():
             # Card styling
             st.markdown(f"""
-            <div style="background-color: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem;">
-                <h4 style="margin: 0 0 0.5rem 0; color: #1e3a8a;">{doc_name}</h4>
-                <div style="display: flex; gap: 20px; font-size: 0.85rem; color: #64748b;">
-                    <span>📄 Pages: <strong>{pages}</strong></span>
-                    <span>🎯 Confidence: <strong>{conf:.2f}%</strong></span>
-                    <span>🕒 Date: <strong>{created}</strong></span>
+            <div style="background-color: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 1.25rem; margin-bottom: 1rem;">
+                <h4 style="margin: 0 0 0.5rem 0; color: #0f172a; font-weight: 600;">{doc_name}</h4>
+                <div style="display: flex; gap: 20px; font-size: 0.85rem; color: #475569;">
+                    <span>Pages: <strong>{pages}</strong></span>
+                    <span>Confidence: <strong>{conf:.1f}%</strong></span>
+                    <span>Date: <strong>{created}</strong></span>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -45,10 +45,10 @@ else:
             # Action buttons
             col1, col2 = st.columns([1, 4])
             with col1:
-                if st.button("👁️ View Results", key=f"view_{doc_id}_{idx}"):
+                if st.button("View Analysis", key=f"view_{doc_id}_{idx}"):
                     st.session_state["selected_doc"] = doc_id
                     st.session_state["current_pipeline_result"] = None  # Reset so it re-fetches
-                    st.success(f"Selected: {doc_name}. Go to 'Results' page!")
+                    st.success(f"Loaded: {doc_name}. Proceed to 'Results' page.")
                     
             with col2:
                 # Fetch results record to get the exports paths

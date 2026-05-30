@@ -9,25 +9,25 @@ from core.export_engine import generate_exports
 from app import CUSTOM_CSS, STORAGE_DIRS
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
-st.title("📤 Document Upload Center")
-st.write("Upload PDF manuals, invoices, scanned images, or receipts to trigger data extraction.")
+st.title("Document Upload Center")
+st.write("Ingest PDF documents, invoices, receipts, or images to trigger the parsing pipeline.")
 
 # Multiple files uploader
 uploaded_files = st.file_uploader(
-    "Choose PDF or Image files", 
+    "Select PDF or Image Files", 
     type=["pdf", "png", "jpg", "jpeg"],
     accept_multiple_files=True
 )
 
 if uploaded_files:
-    st.success(f"{len(uploaded_files)} files selected.")
+    st.success(f"{len(uploaded_files)} files staged for processing.")
     
     # Process files button
-    if st.button("🚀 Analyze Document(s)", use_container_width=True):
+    if st.button("Run Ingestion Pipeline", use_container_width=True):
         progress_bar = st.progress(0)
         
         for idx, file in enumerate(uploaded_files):
-            st.write(f"Processing: **{file.name}**...")
+            st.write(f"Analyzing File: {file.name}")
             
             # Step 1: Save local copy
             local_input_path = os.path.join(STORAGE_DIRS["uploads"], file.name)
@@ -77,6 +77,5 @@ if uploaded_files:
             progress_val = int((idx + 1) / len(uploaded_files) * 100)
             progress_bar.progress(progress_val)
             
-        st.balloons()
-        st.success("All documents processed successfully!")
-        st.info("Head over to the 📄 Results tab to examine extracted data & tables.")
+        st.success("Document ingestion and parsing complete.")
+        st.info("Results are now ready for review under the Results section.")

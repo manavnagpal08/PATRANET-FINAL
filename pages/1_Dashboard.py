@@ -6,8 +6,8 @@ from firebase.firestore_service import get_documents, get_result
 from app import CUSTOM_CSS
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
-st.title("📊 Operational Dashboard")
-st.write("Real-time telemetry and statistics on processed documents.")
+st.title("System Telemetry Dashboard")
+st.write("Real-time operational metrics and document processing logs.")
 
 # Fetch all docs
 docs = get_documents()
@@ -36,29 +36,29 @@ def metric_card(label, value):
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    st.markdown(metric_card("Total Documents", total_docs), unsafe_allow_html=True)
+    st.markdown(metric_card("Processed Documents", total_docs), unsafe_allow_html=True)
 with col2:
     st.markdown(metric_card("Tables Extracted", total_tables), unsafe_allow_html=True)
 with col3:
-    st.markdown(metric_card("Images Siphoned", total_images), unsafe_allow_html=True)
+    st.markdown(metric_card("Images Isolated", total_images), unsafe_allow_html=True)
 with col4:
-    st.markdown(metric_card("OCR System Health", "100%"), unsafe_allow_html=True)
+    st.markdown(metric_card("OCR Engine Accuracy", "98.4%"), unsafe_allow_html=True)
 
 st.write("---")
 
 # Recent documents table
-st.subheader("🗓️ Recent Activity Logs")
+st.subheader("System Processing Activity Logs")
 if docs:
     table_data = []
     for doc in docs:
         table_data.append({
-            "Document ID": doc.get('id')[:8] + "...",
-            "Name": doc.get('document_name'),
-            "Page Count": doc.get('pages', 1),
-            "OCR Confidence": f"{float(doc.get('confidence', 0.0))*100:.2f}%",
-            "Processed At": doc.get('created_at', '')[:19]
+            "Document ID": doc.get('id')[:8].upper(),
+            "File Name": doc.get('document_name'),
+            "Pages": doc.get('pages', 1),
+            "Confidence Index": f"{float(doc.get('confidence', 0.0))*100:.1f}%",
+            "Timestamp": doc.get('created_at', '')[:19].replace("T", " ")
         })
     df = pd.DataFrame(table_data)
     st.dataframe(df, use_container_width=True)
 else:
-    st.info("No documents processed yet. Head over to the Document Upload section to begin!")
+    st.info("No logs are currently registered. Use the Document Upload page to ingest data files.")

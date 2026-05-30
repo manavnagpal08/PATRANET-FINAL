@@ -1,30 +1,21 @@
 import os
-import shutil
 import streamlit as st
-from firebase.firebase_config import is_mock, SERVICE_ACCOUNT_PATH
+from firebase.firebase_config import is_mock
 
 # Import styling helper
 from app import CUSTOM_CSS, STORAGE_DIRS
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
-st.title("⚙️ System Settings")
+st.title("System Settings")
 st.write("Configure and inspect PATRANET IDP service modules.")
 
-st.subheader("🌐 Firebase Integration Connection")
+st.subheader("Firebase Connection Status")
 if not is_mock:
-    st.success("🟢 Connected to real Firebase cloud project (Authentication, Firestore, and Storage).")
+    st.success("Connected to Firebase cloud services (Authentication, Firestore, Storage).")
 else:
-    st.info("ℹ️ Running in Local Sandbox fallback mode. Service account key file was not found.")
-    st.markdown(
-        f"""
-        To connect to a live Firebase project:
-        1. Place your Google Service Account credential JSON at: `{SERVICE_ACCOUNT_PATH}`
-        2. Set up your Storage buckets and DB collection permissions.
-        3. Refresh the application.
-        """
-    )
+    st.info("System operating in Local Sandbox mode. Offline databases and local filesystems active.")
 
-st.subheader("📁 Local Storage Directory Details")
+st.subheader("Active Filesystem Paths")
 st.code(
     f"""
 Uploads Directory: {STORAGE_DIRS['uploads']}
@@ -34,8 +25,8 @@ Images Directory:  {STORAGE_DIRS['images']}
 )
 
 # Utility actions
-st.subheader("🧹 System Utilities")
-if st.button("Purge Processed Document Cache", type="primary"):
+st.subheader("Data Cache Utilities")
+if st.button("Reset Stored Cache Database", type="primary"):
     # Delete uploaded files, generated images, and local JSON database files
     count_deleted = 0
     for key, folder in STORAGE_DIRS.items():
@@ -61,4 +52,4 @@ if st.button("Purge Processed Document Cache", type="primary"):
     st.session_state["selected_doc"] = None
     st.session_state["current_pipeline_result"] = None
     
-    st.success(f"Purged {count_deleted} objects. System reset complete.")
+    st.success(f"Successfully removed {count_deleted} database objects. System memory cleared.")
