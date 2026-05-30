@@ -10,7 +10,8 @@ st.title("System Settings")
 
 # Authentication Check
 if "user" not in st.session_state or st.session_state["user"] is None:
-    st.warning("Authentication required. Please sign in via the Firebase Authentication widget in the sidebar.")
+    st.markdown("<style>[data-testid='stSidebar'] {display: none !important;}</style>", unsafe_allow_html=True)
+    st.warning("Authentication required. Please sign in via the Firebase Authentication widget in the main application portal.")
     st.stop()
 
 st.write("Configure and inspect PATRANET IDP service modules.")

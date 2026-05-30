@@ -10,7 +10,7 @@ st.set_page_config(
 )
 
 # Custom CSS for Premium UI / Dark-themed Sidebar / Light-themed Main Content
-CUSTOM_CSS = """
+CUSTOM_CSS_LOGGED_IN = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     
@@ -29,7 +29,6 @@ CUSTOM_CSS = """
         letter-spacing: -0.02em;
     }
     
-    /* Elegant Card Design */
     .metric-card {
         background-color: #ffffff;
         border-radius: 8px;
@@ -61,7 +60,6 @@ CUSTOM_CSS = """
         color: #0f172a;
     }
     
-    /* Top Bar Styling */
     .top-banner {
         background: #0f172a;
         color: white;
@@ -95,7 +93,6 @@ CUSTOM_CSS = """
         color: #f1f5f9 !important;
     }
     
-    /* Elegant avatar card inside Sidebar */
     .user-profile-card {
         background-color: #1e293b;
         border: 1px solid #334155;
@@ -117,7 +114,45 @@ CUSTOM_CSS = """
 </style>
 """
 
-st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+CUSTOM_CSS_LOGGED_OUT = """
+<style>
+    /* Hide the entire sidebar navigation panel completely */
+    [data-testid="stSidebar"] {
+        display: none !important;
+    }
+    
+    .main {
+        background-color: #0f172a;
+    }
+    
+    /* Center the login container */
+    .login-container {
+        max-width: 450px;
+        margin: 5rem auto;
+        padding: 2.5rem;
+        background-color: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        color: #f8fafc;
+    }
+    
+    .login-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #ffffff;
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .login-subtitle {
+        font-size: 0.9rem;
+        color: #94a3b8;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+</style>
+"""
 
 # Define storage folders paths relative to work dir
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -139,27 +174,43 @@ if "selected_doc" not in st.session_state:
 if "current_pipeline_result" not in st.session_state:
     st.session_state["current_pipeline_result"] = None
 
-# Sidebar Authentication Integration (Firebase Auth Mock Simulator)
-st.sidebar.markdown("<h2 style='text-align: center; color: white;'>PATRANET IDP</h2>", unsafe_allow_html=True)
-st.sidebar.write("---")
-
+# Authentication Routing
 if st.session_state["user"] is None:
-    st.sidebar.subheader("Firebase Authentication")
-    email_input = st.sidebar.text_input("Email Address", "guest@patranet.ai")
-    pass_input = st.sidebar.text_input("Password", "••••••••", type="password")
+    st.markdown(CUSTOM_CSS_LOGGED_OUT, unsafe_allow_html=True)
     
-    col1, col2 = st.sidebar.columns(2)
-    with col1:
-        if st.sidebar.button("Sign In", use_container_width=True):
-            st.session_state["user"] = {"email": email_input, "uid": "firebase_mock_uid_19283"}
-            st.rerun()
+    st.markdown(
+        """
+        <div class="login-container">
+            <div class="login-title">PATRANET</div>
+            <div class="login-subtitle">Intelligent Document Processing Suite</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    # Render Login Form Fields in centered fashion
+    col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.sidebar.button("Register", use_container_width=True):
-            st.session_state["user"] = {"email": email_input, "uid": "firebase_mock_uid_19283"}
-            st.sidebar.success("Account registered!")
-            st.rerun()
+        email_input = st.text_input("Email Address", "guest@patranet.ai", key="login_email")
+        pass_input = st.text_input("Password", "••••••••", type="password", key="login_pass")
+        
+        btn_col1, btn_col2 = st.columns(2)
+        with btn_col1:
+            if st.button("Sign In", use_container_width=True):
+                st.session_state["user"] = {"email": email_input, "uid": "firebase_mock_uid_19283"}
+                st.rerun()
+        with btn_col2:
+            if st.button("Register", use_container_width=True):
+                st.session_state["user"] = {"email": email_input, "uid": "firebase_mock_uid_19283"}
+                st.rerun()
+                
 else:
-    # Authenticated user view in sidebar
+    # Logged In Layout
+    st.markdown(CUSTOM_CSS_LOGGED_IN, unsafe_allow_html=True)
+    
+    # Setup Sidebar profile
+    st.sidebar.markdown("<h2 style='text-align: center; color: white;'>PATRANET IDP</h2>", unsafe_allow_html=True)
+    st.sidebar.write("---")
     st.sidebar.markdown(
         f"""
         <div class="user-profile-card">
@@ -170,16 +221,17 @@ else:
         """,
         unsafe_allow_html=True
     )
+    
     if st.sidebar.button("Sign Out", use_container_width=True):
         st.session_state["user"] = None
         st.session_state["selected_doc"] = None
         st.session_state["current_pipeline_result"] = None
         st.rerun()
-
-st.sidebar.write("---")
-st.sidebar.info("Operational sandbox loaded. Ingested data is cached securely.")
-
-def main():
+        
+    st.sidebar.write("---")
+    st.sidebar.info("Operational sandbox loaded. Ingested data is cached securely.")
+    
+    # Main Dashboard Page
     st.markdown(
         """
         <div class="top-banner">
@@ -192,10 +244,6 @@ def main():
     
     st.write("### Enterprise Extraction Suite")
     
-    if st.session_state["user"] is None:
-        st.warning("Authentication required. Please sign in via the Firebase Authentication widget in the sidebar.")
-        return
-        
     col1, col2 = st.columns([2, 1])
     
     with col1:
@@ -226,6 +274,3 @@ def main():
             """,
             unsafe_allow_html=True
         )
-
-if __name__ == "__main__":
-    main()
