@@ -76,10 +76,16 @@ else:
     with layout_col1:
         st.subheader("Source Page Visualizer")
         if page_images:
-            page_select = st.slider("Navigate Pages", 1, len(page_images), 1)
-            selected_img_path = page_images[page_select - 1]
+            if len(page_images) > 1:
+                page_select = st.slider("Navigate Pages", 1, len(page_images), 1)
+                selected_img_path = page_images[page_select - 1]
+                caption_text = f"Page {page_select} of {len(page_images)}"
+            else:
+                selected_img_path = page_images[0]
+                caption_text = "Page 1 of 1"
+                
             if os.path.exists(selected_img_path):
-                st.image(selected_img_path, caption=f"Page {page_select} of {len(page_images)}", use_column_width=True)
+                st.image(selected_img_path, caption=caption_text, use_column_width=True)
             else:
                 st.info("Rendered page image preview is not available on disk.")
         else:
