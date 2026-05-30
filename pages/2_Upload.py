@@ -6,8 +6,16 @@ from core.pdf_processor import process_document
 from core.export_engine import generate_exports
 
 # Import styling helper
-from app import CUSTOM_CSS, STORAGE_DIRS
-st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+from core.style_config import CUSTOM_CSS_LOGGED_IN
+st.markdown(CUSTOM_CSS_LOGGED_IN, unsafe_allow_html=True)
+
+# Define storage directories locally to prevent app.py circular import errors
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+STORAGE_DIRS = {
+    "uploads": os.path.join(BASE_DIR, "storage", "uploads"),
+    "outputs": os.path.join(BASE_DIR, "storage", "outputs"),
+    "images": os.path.join(BASE_DIR, "storage", "images")
+}
 
 st.title("Document Upload Center")
 

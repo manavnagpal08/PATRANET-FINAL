@@ -1,5 +1,6 @@
 import os
 import streamlit as st
+from core.style_config import CUSTOM_CSS_LOGGED_IN, CUSTOM_CSS_LOGGED_OUT
 
 # Set Streamlit page configurations
 st.set_page_config(
@@ -8,149 +9,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
-# Custom CSS for Premium UI / Dark-themed Sidebar / Light-themed Main Content
-CUSTOM_CSS_LOGGED_IN = """
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    
-    html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .main {
-        background-color: #f8fafc;
-        padding-top: 1.5rem;
-    }
-    
-    h1, h2, h3 {
-        color: #0f172a;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-    }
-    
-    .metric-card {
-        background-color: #ffffff;
-        border-radius: 8px;
-        padding: 1.25rem;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        margin-bottom: 1rem;
-    }
-    
-    .metric-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        border-color: #cbd5e1;
-    }
-    
-    .metric-label {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: #475569;
-        margin-bottom: 0.25rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-    
-    .metric-value {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: #0f172a;
-    }
-    
-    .top-banner {
-        background: #0f172a;
-        color: white;
-        padding: 1.75rem 2rem;
-        border-radius: 8px;
-        margin-bottom: 2rem;
-        border-left: 4px solid #2563eb;
-    }
-    
-    .top-banner h1 {
-        color: white !important;
-        margin: 0;
-        font-size: 2rem;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-    }
-    
-    .top-banner p {
-        margin: 0.25rem 0 0 0;
-        font-size: 0.95rem;
-        color: #94a3b8;
-    }
-    
-    /* Custom Sidebar Aesthetics */
-    [data-testid="stSidebar"] {
-        background-color: #0f172a !important;
-        color: #f1f5f9 !important;
-    }
-    
-    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3, [data-testid="stSidebar"] span {
-        color: #f1f5f9 !important;
-    }
-    
-    .user-profile-card {
-        background-color: #1e293b;
-        border: 1px solid #334155;
-        border-radius: 8px;
-        padding: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    .user-name {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: #f8fafc;
-    }
-    
-    .user-role {
-        font-size: 0.75rem;
-        color: #94a3b8;
-    }
-</style>
-"""
-
-CUSTOM_CSS_LOGGED_OUT = """
-<style>
-    [data-testid="stSidebar"] {
-        display: none !important;
-    }
-    
-    .main {
-        background-color: #0f172a;
-    }
-    
-    .login-container {
-        max-width: 450px;
-        margin: 5rem auto;
-        padding: 2.5rem;
-        background-color: #1e293b;
-        border: 1px solid #334155;
-        border-radius: 12px;
-        box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-        color: #f8fafc;
-    }
-    
-    .login-title {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: #ffffff;
-        text-align: center;
-        margin-bottom: 0.5rem;
-    }
-    
-    .login-subtitle {
-        font-size: 0.9rem;
-        color: #94a3b8;
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-</style>
-"""
 
 # Define storage folders paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -206,7 +64,7 @@ else:
     st.markdown(CUSTOM_CSS_LOGGED_IN, unsafe_allow_html=True)
     
     # Setup Sidebar profile
-    st.sidebar.markdown("<h2 style='text-align: center; color: white;'>PATRANET</h2>", unsafe_allow_html=True)
+    st.sidebar.markdown("<h2 style='text-align: center; color: #0f172a;'>PATRANET</h2>", unsafe_allow_html=True)
     st.sidebar.write("---")
     st.sidebar.markdown(
         f"""

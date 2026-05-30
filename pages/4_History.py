@@ -3,8 +3,8 @@ import streamlit as st
 from firebase.firestore_service import get_documents, get_result
 
 # Import styling helper
-from app import CUSTOM_CSS
-st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+from core.style_config import CUSTOM_CSS_LOGGED_IN
+st.markdown(CUSTOM_CSS_LOGGED_IN, unsafe_allow_html=True)
 
 st.title("Document History")
 
