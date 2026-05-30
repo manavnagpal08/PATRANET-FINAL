@@ -10,72 +10,84 @@ def get_ocr_instance():
         return _ocr
     try:
         from paddleocr import PaddleOCR
-        # Initialize PaddleOCR: use_angle_cls=True allows handling rotated text
         _ocr = PaddleOCR(use_angle_cls=True, lang='en', show_log=False)
         print("PaddleOCR engine initialized successfully.")
     except Exception as e:
-        print(f"Failed to initialize PaddleOCR: {e}. Fallback to mock OCR logic will be used if needed.")
+        print(f"Failed to initialize PaddleOCR: {e}. Fallback OCR options will be checked.")
         _ocr = "MOCK"
     return _ocr
 
+def _tesseract_ocr_extraction(image_path):
+    """
+    Attempts to run Tesseract OCR on the image.
+    """
+    try:
+        import pytesseract
+        from PIL import Image
+        
+        # Open and run Tesseract
+        img = Image.open(image_path)
+        text = pytesseract.image_to_string(img).strip()
+        
+        if text:
+            return {
+                "text": text,
+                "confidence": 0.85,
+                "blocks": [{"text": line, "confidence": 0.85, "box": []} for line in text.split("\n") if line.strip()]
+            }
+    except Exception as e:
+        print(f"Tesseract OCR extraction failed/unavailable: {e}")
+    return None
+
 def extract_text_from_image(image_path):
     """
-    Runs PaddleOCR on the given image path.
-    Returns:
-        dict: containing 'text' (str), 'confidence' (float), and 'blocks' (list of dicts)
+    Runs PaddleOCR first. If missing/fails, runs Tesseract OCR.
+    If both fail, uses mock fallback.
     """
     ocr_engine = get_ocr_instance()
     
-    if ocr_engine == "MOCK" or ocr_engine is None:
-        return _mock_ocr_extraction(image_path)
+    # 1. Try PaddleOCR first
+    if ocr_engine != "MOCK" and ocr_engine is not None:
+        try:
+            result = ocr_engine.ocr(image_path, cls=True)
+            if result and result[0]:
+                full_text_lines = []
+                total_conf = 0.0
+                count = 0
+                blocks = []
+                
+                for line in result[0]:
+                    box = line[0]
+                    text, conf = line[1]
+                    full_text_lines.append(text)
+                    total_conf += conf
+                    count += 1
+                    blocks.append({
+                        "text": text,
+                        "confidence": float(conf),
+                        "box": box
+                    })
+                avg_conf = total_conf / count if count > 0 else 0.0
+                return {
+                    "text": "\n".join(full_text_lines),
+                    "confidence": round(avg_conf, 4),
+                    "blocks": blocks
+                }
+        except Exception as e:
+            print(f"PaddleOCR processing error: {e}. Trying Tesseract fallback...")
 
-    try:
-        # PaddleOCR expects image path or numpy array
-        result = ocr_engine.ocr(image_path, cls=True)
-        
-        if not result or not result[0]:
-            return {
-                "text": "",
-                "confidence": 0.0,
-                "blocks": []
-            }
-            
-        full_text_lines = []
-        total_conf = 0.0
-        count = 0
-        blocks = []
-        
-        for line in result[0]:
-            box = line[0]  # [[x1,y1], [x2,y2], [x3,y3], [x4,y4]]
-            text, conf = line[1]
-            
-            full_text_lines.append(text)
-            total_conf += conf
-            count += 1
-            
-            blocks.append({
-                "text": text,
-                "confidence": float(conf),
-                "box": box
-            })
-            
-        avg_conf = total_conf / count if count > 0 else 0.0
-        
-        return {
-            "text": "\n".join(full_text_lines),
-            "confidence": round(avg_conf, 4),
-            "blocks": blocks
-        }
-        
-    except Exception as e:
-        print(f"PaddleOCR processing error: {e}. Falling back to mock extraction.")
-        return _mock_ocr_extraction(image_path)
+    # 2. Try Tesseract OCR as fallback
+    tess_result = _tesseract_ocr_extraction(image_path)
+    if tess_result:
+        return tess_result
+
+    # 3. Ultimate Fallback: Mock Extraction
+    return _mock_ocr_extraction(image_path)
 
 def _mock_ocr_extraction(image_path):
     """
-    Mock OCR extractor in case PaddleOCR fails or is unavailable.
+    Mock OCR extractor fallback.
     """
-    # Simple mock output based on file presence
     filename = os.path.basename(image_path)
     mock_text = f"=== Mock OCR Extracted Text for {filename} ===\n" \
                 "This is a fallback text extraction block.\n" \

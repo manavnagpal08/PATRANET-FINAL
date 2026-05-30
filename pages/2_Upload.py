@@ -80,6 +80,7 @@ if uploaded_files:
                 "text": extracted_data["text"],
                 "tables": extracted_data["tables"],
                 "images": extracted_data["images"],
+                "page_images": extracted_data["page_images"],
                 "metadata": extracted_data["metadata"],
                 "export_paths": export_paths
             }
