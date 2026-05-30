@@ -22,6 +22,8 @@ def process_document(file_path, storage_dirs):
     extracted_images = []
     tables = []
     
+    page_images = []
+    
     # 1. Process Embedded Images & Tables if PDF
     if file_ext == 'pdf':
         try:
@@ -31,12 +33,19 @@ def process_document(file_path, storage_dirs):
             # Extract tables
             tables = extract_tables_from_pdf(file_path)
             
-            # Open PDF to render pages for OCR
+            # Open PDF to render pages for OCR and visualization
             doc = fitz.open(file_path)
             page_count = len(doc)
             
             for page_num in range(page_count):
                 page = doc.load_page(page_num)
+                
+                # Render page image for visualizer preview
+                pix = page.get_pixmap(dpi=150)
+                page_img_name = f"{os.path.splitext(doc_name)[0]}_p{page_num + 1}.png"
+                page_img_path = os.path.join(storage_dirs['images'], page_img_name)
+                pix.save(page_img_path)
+                page_images.append(page_img_path)
                 
                 # Try direct digital text extraction first
                 digital_text = page.get_text().strip()
@@ -44,17 +53,10 @@ def process_document(file_path, storage_dirs):
                     pages_text.append(digital_text)
                     total_conf += 1.0
                 else:
-                    # Fall back to OCR rendering for scanned pages
-                    pix = page.get_pixmap(dpi=150)
-                    temp_image_path = os.path.join(storage_dirs['uploads'], f"temp_page_{page_num + 1}.png")
-                    pix.save(temp_image_path)
-                    
-                    ocr_result = extract_text_from_image(temp_image_path)
+                    # Perform OCR using the rendered page image
+                    ocr_result = extract_text_from_image(page_img_path)
                     pages_text.append(ocr_result.get('text', ''))
                     total_conf += ocr_result.get('confidence', 0.0)
-                    
-                    if os.path.exists(temp_image_path):
-                        os.remove(temp_image_path)
                     
         except Exception as e:
             print(f"Error processing PDF {doc_name}: {e}")
@@ -62,6 +64,7 @@ def process_document(file_path, storage_dirs):
     # Process straight Image
     elif file_ext in ['png', 'jpg', 'jpeg']:
         page_count = 1
+        page_images.append(file_path)
         ocr_result = extract_text_from_image(file_path)
         pages_text.append(ocr_result.get('text', ''))
         total_conf = ocr_result.get('confidence', 0.0)
@@ -75,6 +78,7 @@ def process_document(file_path, storage_dirs):
         "text": full_text,
         "tables": tables,
         "images": extracted_images,
+        "page_images": page_images,
         "metadata": {
             "pages": page_count,
             "confidence": round(avg_confidence, 4)
