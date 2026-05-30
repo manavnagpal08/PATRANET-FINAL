@@ -272,5 +272,4 @@ else:
             unsafe_allow_html=True
         )
 
-if __name__ == "__main__":
-    main()
+# Main execution flow runs top-to-bottom in Streamlit
