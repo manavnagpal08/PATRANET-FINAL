@@ -37,19 +37,24 @@ def process_document(file_path, storage_dirs):
             
             for page_num in range(page_count):
                 page = doc.load_page(page_num)
-                # Render page to Pixmap
-                pix = page.get_pixmap(dpi=150)
-                temp_image_path = os.path.join(storage_dirs['uploads'], f"temp_page_{page_num + 1}.png")
-                pix.save(temp_image_path)
                 
-                # Perform OCR on page image
-                ocr_result = extract_text_from_image(temp_image_path)
-                pages_text.append(ocr_result.get('text', ''))
-                total_conf += ocr_result.get('confidence', 0.0)
-                
-                # Clean up temp image
-                if os.path.exists(temp_image_path):
-                    os.remove(temp_image_path)
+                # Try direct digital text extraction first
+                digital_text = page.get_text().strip()
+                if digital_text:
+                    pages_text.append(digital_text)
+                    total_conf += 1.0
+                else:
+                    # Fall back to OCR rendering for scanned pages
+                    pix = page.get_pixmap(dpi=150)
+                    temp_image_path = os.path.join(storage_dirs['uploads'], f"temp_page_{page_num + 1}.png")
+                    pix.save(temp_image_path)
+                    
+                    ocr_result = extract_text_from_image(temp_image_path)
+                    pages_text.append(ocr_result.get('text', ''))
+                    total_conf += ocr_result.get('confidence', 0.0)
+                    
+                    if os.path.exists(temp_image_path):
+                        os.remove(temp_image_path)
                     
         except Exception as e:
             print(f"Error processing PDF {doc_name}: {e}")
