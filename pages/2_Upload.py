@@ -1,0 +1,82 @@
+import os
+import streamlit as st
+from firebase.storage_service import upload_file
+from firebase.firestore_service import add_document, save_result
+from core.pdf_processor import process_document
+from core.export_engine import generate_exports
+
+# Import styling helper
+from app import CUSTOM_CSS, STORAGE_DIRS
+st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+
+st.title("📤 Document Upload Center")
+st.write("Upload PDF manuals, invoices, scanned images, or receipts to trigger data extraction.")
+
+# Multiple files uploader
+uploaded_files = st.file_uploader(
+    "Choose PDF or Image files", 
+    type=["pdf", "png", "jpg", "jpeg"],
+    accept_multiple_files=True
+)
+
+if uploaded_files:
+    st.success(f"{len(uploaded_files)} files selected.")
+    
+    # Process files button
+    if st.button("🚀 Analyze Document(s)", use_container_width=True):
+        progress_bar = st.progress(0)
+        
+        for idx, file in enumerate(uploaded_files):
+            st.write(f"Processing: **{file.name}**...")
+            
+            # Step 1: Save local copy
+            local_input_path = os.path.join(STORAGE_DIRS["uploads"], file.name)
+            with open(local_input_path, "wb") as f:
+                f.write(file.getbuffer())
+                
+            # Step 2: Upload to Storage (real or mock fallback)
+            remote_path = f"uploads/{file.name}"
+            storage_url = upload_file(local_input_path, remote_path)
+            
+            # Step 3: Run pipeline
+            extracted_data = process_document(local_input_path, STORAGE_DIRS)
+            
+            # Step 4: Generate exports (JSON, CSV, Excel)
+            export_paths = generate_exports(extracted_data, STORAGE_DIRS["outputs"])
+            
+            # Upload outputs to Firebase Storage as well
+            for fmt, path in export_paths.items():
+                upload_file(path, f"exports/{os.path.basename(path)}")
+                
+            # Step 5: Save documents database metadata
+            doc_record = {
+                "document_name": file.name,
+                "storage_url": storage_url,
+                "pages": extracted_data["metadata"]["pages"],
+                "confidence": extracted_data["metadata"]["confidence"],
+                "user_id": st.session_state["user"]["uid"],
+            }
+            doc_id = add_document(doc_record)
+            
+            # Step 6: Save extraction result
+            result_record = {
+                "document_id": doc_id,
+                "document_name": file.name,
+                "text": extracted_data["text"],
+                "tables": extracted_data["tables"],
+                "images": extracted_data["images"],
+                "metadata": extracted_data["metadata"],
+                "export_paths": export_paths
+            }
+            save_result(result_record)
+            
+            # Save selection to session state to display in Results page
+            st.session_state["selected_doc"] = doc_id
+            st.session_state["current_pipeline_result"] = result_record
+            
+            progress_val = int((idx + 1) / len(uploaded_files) * 100)
+            progress_bar.progress(progress_val)
+            
+        st.balloons()
+        st.success("All documents processed successfully!")
+        st.info("Head over to the 📄 Results tab to examine extracted data & tables.")
