@@ -10,6 +10,11 @@ st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 st.title("Extraction Results Viewer")
 
+# Authentication Check
+if "user" not in st.session_state or st.session_state["user"] is None:
+    st.warning("Authentication required. Please sign in via the Firebase Authentication widget in the sidebar.")
+    st.stop()
+
 # Fetch document ID to show
 doc_id = st.session_state.get("selected_doc")
 result_data = st.session_state.get("current_pipeline_result")

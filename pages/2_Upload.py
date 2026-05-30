@@ -10,6 +10,12 @@ from app import CUSTOM_CSS, STORAGE_DIRS
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 st.title("Document Upload Center")
+
+# Authentication Check
+if "user" not in st.session_state or st.session_state["user"] is None:
+    st.warning("Authentication required. Please sign in via the Firebase Authentication widget in the sidebar.")
+    st.stop()
+
 st.write("Ingest PDF documents, invoices, receipts, or images to trigger the parsing pipeline.")
 
 # Multiple files uploader

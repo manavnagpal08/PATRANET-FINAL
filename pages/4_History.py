@@ -7,6 +7,12 @@ from app import CUSTOM_CSS
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 st.title("Document History")
+
+# Authentication Check
+if "user" not in st.session_state or st.session_state["user"] is None:
+    st.warning("Authentication required. Please sign in via the Firebase Authentication widget in the sidebar.")
+    st.stop()
+
 st.write("Browse, search, and manage previously analyzed documents.")
 
 # Search query

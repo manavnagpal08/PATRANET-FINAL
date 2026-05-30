@@ -4,12 +4,12 @@ import streamlit as st
 # Set Streamlit page configurations
 st.set_page_config(
     page_title="PATRANET | Intelligent Document Processing",
-    page_icon=None, # Clean, no emojis
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for Premium UI / Light Theme
+# Custom CSS for Premium UI / Dark-themed Sidebar / Light-themed Main Content
 CUSTOM_CSS = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -41,8 +41,8 @@ CUSTOM_CSS = """
     }
     
     .metric-card:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         border-color: #cbd5e1;
     }
     
@@ -84,6 +84,36 @@ CUSTOM_CSS = """
         font-size: 0.95rem;
         color: #94a3b8;
     }
+    
+    /* Custom Sidebar Aesthetics */
+    [data-testid="stSidebar"] {
+        background-color: #0f172a !important;
+        color: #f1f5f9 !important;
+    }
+    
+    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3, [data-testid="stSidebar"] span {
+        color: #f1f5f9 !important;
+    }
+    
+    /* Elegant avatar card inside Sidebar */
+    .user-profile-card {
+        background-color: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .user-name {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #f8fafc;
+    }
+    
+    .user-role {
+        font-size: 0.75rem;
+        color: #94a3b8;
+    }
 </style>
 """
 
@@ -103,18 +133,58 @@ for folder in STORAGE_DIRS.values():
 
 # Initialize Session States
 if "user" not in st.session_state:
-    st.session_state["user"] = {"email": "hackathon_demo@patranet.ai", "uid": "demo_user"}
+    st.session_state["user"] = None
 if "selected_doc" not in st.session_state:
     st.session_state["selected_doc"] = None
 if "current_pipeline_result" not in st.session_state:
     st.session_state["current_pipeline_result"] = None
+
+# Sidebar Authentication Integration (Firebase Auth Mock Simulator)
+st.sidebar.markdown("<h2 style='text-align: center; color: white;'>PATRANET IDP</h2>", unsafe_allow_html=True)
+st.sidebar.write("---")
+
+if st.session_state["user"] is None:
+    st.sidebar.subheader("Firebase Authentication")
+    email_input = st.sidebar.text_input("Email Address", "guest@patranet.ai")
+    pass_input = st.sidebar.text_input("Password", "••••••••", type="password")
+    
+    col1, col2 = st.sidebar.columns(2)
+    with col1:
+        if st.sidebar.button("Sign In", use_container_width=True):
+            st.session_state["user"] = {"email": email_input, "uid": "firebase_mock_uid_19283"}
+            st.rerun()
+    with col2:
+        if st.sidebar.button("Register", use_container_width=True):
+            st.session_state["user"] = {"email": email_input, "uid": "firebase_mock_uid_19283"}
+            st.sidebar.success("Account registered!")
+            st.rerun()
+else:
+    # Authenticated user view in sidebar
+    st.sidebar.markdown(
+        f"""
+        <div class="user-profile-card">
+            <div class="user-name">{st.session_state["user"]["email"]}</div>
+            <div class="user-role">Role: Cloud Document Admin</div>
+            <div class="user-role">Token: Firebase Auth Active</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    if st.sidebar.button("Sign Out", use_container_width=True):
+        st.session_state["user"] = None
+        st.session_state["selected_doc"] = None
+        st.session_state["current_pipeline_result"] = None
+        st.rerun()
+
+st.sidebar.write("---")
+st.sidebar.info("Operational sandbox loaded. Ingested data is cached securely.")
 
 def main():
     st.markdown(
         """
         <div class="top-banner">
             <h1>PATRANET</h1>
-            <p>Intelligent Document Processing & Structured Data Extraction</p>
+            <p>Intelligent Document Processing & Structured Data Extraction Suite</p>
         </div>
         """,
         unsafe_allow_html=True
@@ -122,6 +192,10 @@ def main():
     
     st.write("### Enterprise Extraction Suite")
     
+    if st.session_state["user"] is None:
+        st.warning("Authentication required. Please sign in via the Firebase Authentication widget in the sidebar.")
+        return
+        
     col1, col2 = st.columns([2, 1])
     
     with col1:
