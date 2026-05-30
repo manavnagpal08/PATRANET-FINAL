@@ -26,17 +26,8 @@ def generate_exports(extracted_data, output_dir):
     
     try:
         with pd.ExcelWriter(xlsx_path, engine='openpyxl') as writer:
-            # Sheet 1: Metadata & Text Overview
-            meta_df = pd.DataFrame([
-                {"Metric": "Document Name", "Value": doc_name},
-                {"Metric": "Pages", "Value": extracted_data["metadata"]["pages"]},
-                {"Metric": "Confidence Score", "Value": extracted_data["metadata"]["confidence"]},
-                {"Metric": "Text Characters", "Value": len(extracted_data["text"])}
-            ])
-            meta_df.to_sheet_name = "Overview"
-            meta_df.to_excel(writer, sheet_name="Overview", index=False)
-            
-            # Additional sheets for extracted tables
+            # Additional sheets for extracted tables first
+            tables_written = False
             if tables:
                 for idx, table in enumerate(tables):
                     table_data = table.get("data", [])
@@ -47,7 +38,18 @@ def generate_exports(extracted_data, output_dir):
                         df = pd.DataFrame(rows, columns=headers)
                         sheet_name = f"Table P{table['page']}_T{table['index']}"[:30] # Excel limit 31 chars
                         df.to_excel(writer, sheet_name=sheet_name, index=False)
-            else:
+                        tables_written = True
+            
+            # Sheet: Metadata & Text Overview (written last so tables appear first)
+            meta_df = pd.DataFrame([
+                {"Metric": "Document Name", "Value": doc_name},
+                {"Metric": "Pages", "Value": extracted_data["metadata"]["pages"]},
+                {"Metric": "Confidence Score", "Value": extracted_data["metadata"]["confidence"]},
+                {"Metric": "Text Characters", "Value": len(extracted_data["text"])}
+            ])
+            meta_df.to_excel(writer, sheet_name="Overview", index=False)
+            
+            if not tables_written:
                 # Dummy sheet if no tables
                 pd.DataFrame([{"Message": "No tables detected."}]).to_excel(writer, sheet_name="Tables", index=False)
         export_paths["xlsx"] = xlsx_path
