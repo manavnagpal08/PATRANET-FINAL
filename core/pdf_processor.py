@@ -3,6 +3,7 @@ import fitz  # PyMuPDF
 from core.ocr_engine import extract_text_from_image
 from core.table_extractor import extract_tables_from_pdf
 from core.image_extractor import extract_images_from_pdf
+from core.spelling_corrector import auto_correct_spelling
 
 def process_document(file_path, storage_dirs):
     """
@@ -11,7 +12,8 @@ def process_document(file_path, storage_dirs):
     2. Embedded image extraction
     3. OCR Text extraction
     4. Table extraction
-    5. Returns structured document dictionary
+    5. Spelling auto-correction
+    6. Returns structured document dictionary
     """
     doc_name = os.path.basename(file_path)
     file_ext = doc_name.split('.')[-1].lower()
@@ -21,7 +23,6 @@ def process_document(file_path, storage_dirs):
     page_count = 0
     extracted_images = []
     tables = []
-    
     page_images = []
     
     # 1. Process Embedded Images & Tables if PDF
@@ -76,6 +77,9 @@ def process_document(file_path, storage_dirs):
     # Compile structure
     avg_confidence = total_conf / page_count if page_count > 0 else 0.0
     full_text = "\n\n--- PAGE BREAK ---\n\n".join(pages_text)
+    
+    # Auto-correct spelling mistakes automatically in the background
+    full_text = auto_correct_spelling(full_text)
     
     return {
         "document_name": doc_name,
