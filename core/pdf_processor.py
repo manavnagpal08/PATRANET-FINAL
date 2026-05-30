@@ -53,8 +53,10 @@ def process_document(file_path, storage_dirs):
                     pages_text.append(digital_text)
                     total_conf += 1.0
                 else:
-                    # Perform OCR using the rendered page image
-                    ocr_result = extract_text_from_image(page_img_path)
+                    # Perform OCR using the preprocessed page image to minimize errors
+                    from core.image_preprocessor import preprocess_image_for_ocr
+                    preprocessed_img_path = preprocess_image_for_ocr(page_img_path)
+                    ocr_result = extract_text_from_image(preprocessed_img_path)
                     pages_text.append(ocr_result.get('text', ''))
                     total_conf += ocr_result.get('confidence', 0.0)
                     
@@ -65,7 +67,9 @@ def process_document(file_path, storage_dirs):
     elif file_ext in ['png', 'jpg', 'jpeg']:
         page_count = 1
         page_images.append(file_path)
-        ocr_result = extract_text_from_image(file_path)
+        from core.image_preprocessor import preprocess_image_for_ocr
+        preprocessed_img_path = preprocess_image_for_ocr(file_path)
+        ocr_result = extract_text_from_image(preprocessed_img_path)
         pages_text.append(ocr_result.get('text', ''))
         total_conf = ocr_result.get('confidence', 0.0)
         
