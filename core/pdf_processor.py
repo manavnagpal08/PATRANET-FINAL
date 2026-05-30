@@ -81,10 +81,10 @@ def process_document(file_path, storage_dirs):
     # Auto-correct spelling mistakes automatically in the background
     full_text = auto_correct_spelling(full_text)
     
-    # Fallback to mock tables if empty (e.g. for images or failed parses) to guarantee UI presentation
+    # Fallback to mock tables or text parsing if empty (e.g. for images or failed parses) to guarantee UI presentation
     if not tables:
-        from core.table_extractor import _generate_mock_tables
-        tables = _generate_mock_tables()
+        from core.table_extractor import extract_table_from_text
+        tables = extract_table_from_text(full_text)
     
     return {
         "document_name": doc_name,

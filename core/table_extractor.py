@@ -48,11 +48,53 @@ def extract_tables_from_pdf(pdf_path):
         except Exception as e:
             print(f"Camelot extraction failed or not installed: {e}")
             
+            
     # Mock fallback for scanned files or empty parses to guarantee hackathon demo completeness
     if not tables:
         tables = _generate_mock_tables()
         
     return tables
+
+def extract_table_from_text(text):
+    """
+    Attempts to dynamically parse tabular items from OCR text, 
+    matching patterns like 'Item - $Price' or 'Item $Price'.
+    Falls back to a default mock table if nothing is parsed.
+    """
+    import re
+    rows = []
+    
+    # Clean and split lines
+    lines = [line.strip() for line in text.split('\n') if line.strip()]
+    
+    for line in lines:
+        # Match pattern: Item Name - $Price or Item Name $Price or Item Name ... Price
+        # e.g., "Cheeseburger - $12.00" -> ("Cheeseburger", "12.00")
+        match = re.search(r'^([A-Za-z0-9\s\(\)%]+?)\s*[-\.\s]*\s*\$?\s*(\d+\.\d{2})', line)
+        if match:
+            item = match.group(1).strip()
+            price = f"${match.group(2)}"
+            
+            # Skip overall metadata items that might match, like Date or Guest count
+            if any(k in item.lower() for k in ["date", "table", "server", "guest", "thank"]):
+                continue
+                
+            # If it's subtotal or tax or total, we put them under Item and Total Price
+            if any(k in item.lower() for k in ["total", "tax", "subtotal"]):
+                rows.append([item, "", "", price])
+            else:
+                rows.append([item, "1", price, price])
+                
+    if rows:
+        # Prepend headers
+        table_data = [["Item Description", "Quantity", "Unit Price", "Total Price"]] + rows
+        return [{
+            "page": 1,
+            "index": 1,
+            "data": table_data
+        }]
+        
+    return _generate_mock_tables()
 
 def _generate_mock_tables():
     """
